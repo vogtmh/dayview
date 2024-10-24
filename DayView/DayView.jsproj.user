@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Source>C:\Users\mavo\Downloads\dayview.png</Source>
+    <SmallTileSource>C:\Users\mavo\Downloads\dayview.png</SmallTileSource>
+    <MediumTileSource>C:\Users\mavo\Downloads\dayview.png</MediumTileSource>
+    <WideTileSource>C:\Users\mavo\Downloads\dayview.png</WideTileSource>
+    <LargeTileSource>C:\Users\mavo\Downloads\dayview.png</LargeTileSource>
+    <AppIconSource>C:\Users\mavo\Downloads\dayview.png</AppIconSource>
+    <SplashScreenSource>C:\Users\mavo\Downloads\dayview.png</SplashScreenSource>
+    <PackageLogoSource>C:\Users\mavo\Downloads\dayview.png</PackageLogoSource>
+    <AppxPackageIsForStore>False</AppxPackageIsForStore>
+    <AppxShowAllApps>False</AppxShowAllApps>
+    <AppxBuildConfigurationSelection>neutral</AppxBuildConfigurationSelection>
+    <PackageOptionalProjectsInIdeBuilds>False</PackageOptionalProjectsInIdeBuilds>
+  </PropertyGroup>
+</Project>
