@@ -364,5 +364,9 @@ function clickHidecontrol() {
     }
 }
 
+$(document).ready(function () {
+    document.onselectstart = new Function("return false")
+});
+
 updateContent()
 setInterval(updateContent, 1800000)

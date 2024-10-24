@@ -1,5 +1,5 @@
-MainPackage=C:\Users\mavo\source\repos\DayView\DayView\bin\Release\DayView_1.0.0.0_AnyCPU.appx
-ResourcePack=C:\Users\mavo\source\repos\DayView\DayView\bin\Release\DayView_1.0.0.0_scale-100.appx
-ResourcePack=C:\Users\mavo\source\repos\DayView\DayView\bin\Release\DayView_1.0.0.0_scale-125.appx
-ResourcePack=C:\Users\mavo\source\repos\DayView\DayView\bin\Release\DayView_1.0.0.0_scale-150.appx
-ResourcePack=C:\Users\mavo\source\repos\DayView\DayView\bin\Release\DayView_1.0.0.0_scale-400.appx
+MainPackage=C:\Users\mavo\Documents\dayview\DayView\bin\Release\DayView_1.0.1.0_AnyCPU.appx
+ResourcePack=C:\Users\mavo\Documents\dayview\DayView\bin\Release\DayView_1.0.1.0_scale-100.appx
+ResourcePack=C:\Users\mavo\Documents\dayview\DayView\bin\Release\DayView_1.0.1.0_scale-125.appx
+ResourcePack=C:\Users\mavo\Documents\dayview\DayView\bin\Release\DayView_1.0.1.0_scale-150.appx
+ResourcePack=C:\Users\mavo\Documents\dayview\DayView\bin\Release\DayView_1.0.1.0_scale-400.appx
