@@ -23,8 +23,12 @@ function getCookie(cname) {
     return "";
 }
 
+function upperCase(val) {
+    return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+}
+
 // Declares variables
-var currenttab = "news"
+var currenttab = "alle"
 var feedsArr = []
 var newsArr;
 var loadcontent = false;
@@ -49,9 +53,9 @@ else {
 var datafile;
 
 // Fetches news data and updates page once all sources have been fetched
-function getFeed(RSS_URL, SRC_NAME) {
+function getFeed(RSS_URL, SRC_NAME, ressort) {
 
-    $('#content').html = 'Fetching ' + SRC_NAME
+    $('#content').html('<img src="images/preloading.gif" id="preloader" />');
 
     $.ajax({
         url: RSS_URL,
@@ -102,6 +106,7 @@ function getFeed(RSS_URL, SRC_NAME) {
             newsDone++
             console.log(SRC_NAME + ' fetched')
             if (newsDone == newsNeeded) {
+                html += '<div id="feedtitle">' + SRC_NAME + '</div>';
                 // Create html for news
                 for (var t = 0; t < newsArr.length; t++) {
                     var ArticleDate = new Date(Number(newsArr[t][0]))
@@ -129,7 +134,7 @@ function getFeed(RSS_URL, SRC_NAME) {
                 }
                 // Output news in html format
                 //contentDIV = document.getElementById('content')
-                if (currenttab == 'news') {
+                if (currenttab == ressort) {
                     $('#content').html(html)
                     if (jumptotop) { scroll(0, 0) }
                     console.log('News page updated');
@@ -139,7 +144,7 @@ function getFeed(RSS_URL, SRC_NAME) {
                 }
 
                 //newsbuttonDIV = document.getElementById('control-news')
-                document.getElementById('control-news').style.backgroundImage = "url(images/news.png)";
+                document.getElementById('control-' + ressort).style.backgroundImage = "url(images/" + ressort + ".png)";
                 newsbuttonDIV.style.backgroundColor = "Highlight";
             }
         },
@@ -151,16 +156,36 @@ function getFeed(RSS_URL, SRC_NAME) {
 }
 
 // Triggers the fetch of news data
-function updateNews() {
-    newsbuttonDIV = document.getElementById('control-news')
+function updateNews(ressort) {
+    var feedTitle = upperCase(ressort);
+    var feedURL = '';
+    newsbuttonDIV = document.getElementById('control-'+ressort)
     newsbuttonDIV.style.backgroundImage = "url(images/loading.gif)";
     contentDIV = document.getElementById('content')
     newsArr = []
     newsDone = 0
-    newsNeeded = feedsArr.length //required feeds to update page
-    if (feedsArr.includes('ard')) { getFeed("https://www.tagesschau.de/infoservices/alle-meldungen-100~rss2.xml", "Alle") }
-    if (feedsArr.includes('inland')) { getFeed("https://www.tagesschau.de/inland/index~rss2.xml", "Inland") }
-    if (feedsArr.includes('ausland')) { getFeed("https://www.tagesschau.de/ausland/index~rss2.xml", "Ausland") }
+    newsNeeded = 1 //required feeds to update page
+    console.log('update requested for ' + ressort);
+    switch (ressort) {
+        case 'alle':
+            feedURL = "https://www.tagesschau.de/infoservices/alle-meldungen-100~rss2.xml";
+            break;
+        case 'inland':
+            feedURL = "https://www.tagesschau.de/inland/index~rss2.xml";
+            break;
+        case 'ausland':
+            feedURL = "https://www.tagesschau.de/ausland/index~rss2.xml";
+            break;
+        case 'wirtschaft':
+            feedURL = "https://www.tagesschau.de/wirtschaft/index~rss2.xml";
+            break;
+        case 'wissen':
+            feedURL = "https://www.tagesschau.de/wissen/index~rss2.xml";
+            break;
+        default:
+            console.log('unknown news ressort')
+    }
+    getFeed(feedURL, feedTitle, ressort)
     scroll(0, 0)
 }
 
@@ -196,33 +221,15 @@ function timestamp2fulldate(ts) {
     return (year + "-" + month + "-" + date + ' ' + hours + ':' + minutes);
 }
 
-// Checks the current tab and starts the content update
-function updateContent() {
-    reloadDIV = document.getElementById('reload')
-    reloadDIV.innerHTML = ''
-    switch (currenttab) {
-        case 'news':
-            updateNews()
-            break;
-        case 'stats':
-            break;
-        case 'settings':
-            break;
-        default:
-            window.alert('unknown tab')
-    }
-}
-
 // Switches to news or triggers a news update
-function clickNews() {
+function clickNews(ressort) {
     jumptotop = false
-    if (currenttab != "news") { jumptotop = true }
-    currenttab = "news"
-    console.log('Active news feeds: ' + feedsArr)
-    $('#control-news').css('border', '2px solid #ffffff');
-    $('#control-stats').css('border', 'none');
-    $('#control-settings').css('border', 'none');
-    updateContent()
+    if (currenttab != ressort) { jumptotop = true }
+    currenttab = ressort
+    $('.controlbutton').css('background-color', 'transparent');
+    $('#control-' + ressort).css('background-color', 'Highlight');
+    console.log('clicked to update ' + ressort);
+    updateNews(ressort);
 }
 
 // Displays the settings page
@@ -236,52 +243,15 @@ function clickSettings() {
     }
 
     currenttab = "settings"
-    $('#control-news').css('border', 'none');
-    $('#control-stats').css('border', 'none');
-    $('#control-settings').css('border', '2px solid #ffffff');
+    $('.controlbutton').css('background-color', 'transparent');
+    $('#control-settings').css('background-color', 'Highlight');
     contentDIV = document.getElementById('content')
     settingsout = '<div style="font-size:16px; sans-serif; margin-left:10%;width:80%;">'
-        + '<div style="font-size:24px; text-align:center;width:40%; margin-left:30%;margin-bottom:30px;">Settings</div>'
+        + '<div id="feedtitle" style="margin-bottom:20px;">Settings</div>'
         + '<div id="version" style="text-align:left;width:80%;margin-left:10%;margin-bottom:15px;">DayView by mavodev v' + appstring + '</div>'
-        + '<div style="text-align:left;width:80%;margin-left:10%;margin-bottom:10px;">Newsfeeds:</div>'
+        + '<div style="text-align:left;width:80%;margin-left:10%;margin-bottom:10px;">Content settings:</div>'
         + '<div style="width:80%;margin-left:10%;">'
-        + '<label class="container">Alle Meldungen';
-
-    if (feedsArr.includes('ard')) {
-        settingsout += '  <input type="checkbox" id="feed_ard" checked="checked">';
-    }
-    else {
-        settingsout += '  <input type="checkbox" id="feed_ard">';
-    }
-
-    settingsout += '  <span class="checkmark"></span>'
-        + '</label>'
-        + '<label class="container">Inland';
-    if (feedsArr.includes('inland')) {
-        settingsout += '  <input type="checkbox" id="feed_inland" checked="checked">'
-    }
-    else {
-        settingsout += '  <input type="checkbox" id="feed_inland">';
-    }
-
-    settingsout += '  <span class="checkmark"></span>'
-        + '</label>'
-        + '<label class="container">Ausland';
-
-    if (feedsArr.includes('ausland')) {
-        settingsout += '  <input type="checkbox" id="feed_ausland" checked="checked">'
-    }
-    else {
-        settingsout += '  <input type="checkbox" id="feed_ausland">';
-    }
-
-    settingsout += '  <span class="checkmark"></span>'
-        + '</label>'
-        + '</div>'
-
-    settingsout += '<div style="text-align:left;width:80%;margin-left:10%;margin-bottom:10px;">Content settings:</div>'
-        + '<div style="width:80%;margin-left:10%;">'
-        + '<label class="container">Load all content'
+        + '<label class="container">Include pictures'
     if (loadcontent == true) {
         settingsout += '  <input type="checkbox" id="content_loadall" checked="checked">'
     }
@@ -301,19 +271,6 @@ function clickSettings() {
 function applySettings() {
     applyButtonDIV = document.getElementById('settings-apply-button')
     applyButtonDIV.style.backgroundColor = '#a0a0a0';
-    feedsArr = []
-    if (document.getElementById("feed_ard").checked) {
-        feedsArr.push('ard')
-    }
-    if (document.getElementById("feed_inland").checked) {
-        feedsArr.push('inland')
-    }
-    if (document.getElementById("feed_ausland").checked) {
-        feedsArr.push('ausland')
-    }
-
-    feedsCookie = feedsArr.join('|');
-    setCookie('feeds', feedsCookie)
 
     if (document.getElementById("content_loadall").checked) {
         setCookie('loadcontent', 'true');
@@ -324,7 +281,7 @@ function applySettings() {
         loadcontent = false;
     }
 
-    clickNews();
+    clickNews('alle');
 }
 
 // Hides the control bar
@@ -368,5 +325,5 @@ $(document).ready(function () {
     document.onselectstart = new Function("return false")
 });
 
-updateContent()
-setInterval(updateContent, 1800000)
+updateNews('alle')
+setInterval(updateNews(currenttab), 1800000)

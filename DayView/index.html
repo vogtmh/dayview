@@ -13,19 +13,19 @@
     <script src="js/jquery3.js"></script>
     <script src="js/xml2json.js"></script>
     <link rel="stylesheet" type="text/css" href="css/default.css">
-    <title>microRSS2</title>
-
+    <title>DayView</title>
 </head>
-<body translate="no" style="overflow-x:hidden;">
-    <div id="reload" class="reload"></div>
 
-    <div id="content" style="position: relative; z-index:2; width:100%; bottom:0px; margin-top:0px;">
-        <img src="images/preloading.gif" style="margin-left:40%;margin-right:40%;margin-top:40%; width:20%;border:none;" />
+<body translate="no" style="overflow-x:hidden;">
+    <div id="content">
+        <img src="images/preloading.gif" id="preloader" />
     </div>
-    <div id="footer" style="position: relative; z-index:2; width:100%; height:90px; margin-top:20px;pointer-events:none"></div>
-    <div id="controls" style="position:fixed;bottom:-20px;right:0px; width:100%;height:80px; z-index: 5; opacity:0.9; text-align: center; background-color:#111111">
-        <div id="control-news" class="controlbutton" onclick="clickNews()" style="background-image: url(images/news.png);border:2px solid #ffffff;"></div>
-        <!--<div id="control-stats" class="controlbutton" style="background-image: url(images/stats.png);"></div>-->
+    <div id="controls">
+        <div id="control-alle" class="controlbutton" onclick="clickNews('alle')" style="background-image: url(images/alle.png);"></div>
+        <div id="control-inland" class="controlbutton" onclick="clickNews('inland')" style="background-image: url(images/inland.png);"></div>
+        <div id="control-ausland" class="controlbutton" onclick="clickNews('ausland')" style="background-image: url(images/ausland.png);"></div>
+        <div id="control-wirtschaft" class="controlbutton" onclick="clickNews('wirtschaft')" style="background-image: url(images/wirtschaft.png);"></div>
+        <div id="control-wissen" class="controlbutton" onclick="clickNews('wissen')" style="background-image: url(images/wissen.png);"></div>
         <div id="control-settings" class="controlbutton" onclick="clickSettings()" style="background-image: url(images/settings.png);"></div>
     </div>
     <script src="js/main.js"></script>

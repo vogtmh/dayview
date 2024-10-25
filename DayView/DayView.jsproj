@@ -79,6 +79,8 @@
     <Content Include="images\add.png" />
     <Content Include="images\arrow-left.png" />
     <Content Include="images\arrow-right.png" />
+    <Content Include="images\ausland.png" />
+    <Content Include="images\inland.png" />
     <Content Include="images\LargeTile.scale-100.png" />
     <Content Include="images\LargeTile.scale-125.png" />
     <Content Include="images\LargeTile.scale-150.png" />
@@ -87,7 +89,7 @@
     <Content Include="images\loading.gif" />
     <Content Include="images\loading.png" />
     <Content Include="images\LockScreenLogo.scale-200.png" />
-    <Content Include="images\news.png" />
+    <Content Include="images\alle.png" />
     <Content Include="images\preloading.gif" />
     <Content Include="images\rss.png" />
     <Content Include="images\searchicon.png" />
@@ -134,6 +136,8 @@
     <Content Include="images\Wide310x150Logo.scale-150.png" />
     <Content Include="images\Wide310x150Logo.scale-200.png" />
     <Content Include="images\Wide310x150Logo.scale-400.png" />
+    <Content Include="images\wirtschaft.png" />
+    <Content Include="images\wissen.png" />
     <Content Include="index.html" />
     <Content Include="js\jquery3.js" />
     <Content Include="js\main.js" />
