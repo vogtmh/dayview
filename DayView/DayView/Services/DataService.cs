@@ -22,6 +22,7 @@ namespace DayView.Services
         private const string SeededKey = "feedsSeeded";
         private const string UseSystemAccentKey = "useSystemAccent";
         private const string RefreshIntervalKey = "refreshIntervalMinutes";
+        private const string LiveTileEnabledKey = "liveTileEnabled";
 
         // Default feed seeded on first launch (the old app's "alle" / all-news feed).
         private const string DefaultFeedUrl = "https://www.tagesschau.de/infoservices/alle-meldungen-100~rss2.xml";
@@ -100,6 +101,18 @@ namespace DayView.Services
                 return 30;
             }
             set { _localSettings.Values[RefreshIntervalKey] = value; }
+        }
+
+        public bool LiveTileEnabled
+        {
+            // Enabled by default.
+            get
+            {
+                if (_localSettings.Values.ContainsKey(LiveTileEnabledKey))
+                    return (bool)_localSettings.Values[LiveTileEnabledKey];
+                return true;
+            }
+            set { _localSettings.Values[LiveTileEnabledKey] = value; }
         }
 
         // ==================== Generic JSON persistence ====================

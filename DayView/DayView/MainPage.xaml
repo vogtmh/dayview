@@ -94,16 +94,20 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <!-- Subtab switcher: Discover (default) | Add by URL -->
+            <!-- Subtab switcher: My feeds (default) | Discover | Add by URL -->
             <Grid Grid.Row="0" Background="#1a1a1a" Padding="12,8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Button x:Name="FeedsDiscoverTab" Grid.Column="0" Content="Discover"
-                        Click="FeedsDiscoverTab_Click" HorizontalAlignment="Stretch"
+                <Button x:Name="FeedsMineTab" Grid.Column="0" Content="My feeds"
+                        Click="FeedsMineTab_Click" HorizontalAlignment="Stretch"
                         Background="{StaticResource AppAccentBrush}" Foreground="White" />
-                <Button x:Name="FeedsManualTab" Grid.Column="1" Content="Add by URL"
+                <Button x:Name="FeedsDiscoverTab" Grid.Column="1" Content="Discover"
+                        Click="FeedsDiscoverTab_Click" HorizontalAlignment="Stretch"
+                        Background="#333333" Foreground="White" Margin="8,0,0,0" />
+                <Button x:Name="FeedsManualTab" Grid.Column="2" Content="Add by URL"
                         Click="FeedsManualTab_Click" HorizontalAlignment="Stretch"
                         Background="#333333" Foreground="White" Margin="8,0,0,0" />
             </Grid>
@@ -111,8 +115,37 @@
             <ScrollViewer Grid.Row="1">
                 <StackPanel Padding="16">
 
+                    <!-- My feeds subtab: subscribed feeds -->
+                    <StackPanel x:Name="MyFeedsSubPanel">
+                        <ItemsControl x:Name="SubscribedList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Padding="0,8" Background="Transparent">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Title}" Foreground="White" FontSize="14"
+                                                       TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding Url}" Foreground="Gray" FontSize="11"
+                                                       TextWrapping="Wrap" MaxLines="1" TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                        <Button Grid.Column="1" VerticalAlignment="Center" Margin="8,0,0,0"
+                                                Tag="{Binding}" Click="RemoveFeed_Click"
+                                                Background="Transparent" Padding="8"
+                                                ToolTipService.ToolTip="Remove feed">
+                                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE74D;"
+                                                      FontSize="16" Foreground="#FF6B6B" />
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
                     <!-- Discover subtab: keyword search -->
-                    <StackPanel x:Name="DiscoverSubPanel">
+                    <StackPanel x:Name="DiscoverSubPanel" Visibility="Collapsed">
                         <TextBlock Text="Search by keyword (e.g. heise, sport, nasa)" Foreground="Gray"
                                    FontSize="13" Margin="0,0,0,4" />
                         <Grid>
@@ -182,35 +215,6 @@
 
                     <TextBlock x:Name="FeedsStatus" Foreground="#4CD964" FontSize="13"
                                TextWrapping="Wrap" Margin="0,10,0,0" />
-
-                    <!-- Shared: subscribed feeds -->
-                    <TextBlock Text="Your feeds" Foreground="White" FontSize="16" FontWeight="SemiBold"
-                               Margin="0,18,0,6" />
-                    <ItemsControl x:Name="SubscribedList">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Grid Padding="0,8" Background="Transparent">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding Title}" Foreground="White" FontSize="14"
-                                                   TextWrapping="Wrap" />
-                                        <TextBlock Text="{Binding Url}" Foreground="Gray" FontSize="11"
-                                                   TextWrapping="Wrap" MaxLines="1" TextTrimming="CharacterEllipsis" />
-                                    </StackPanel>
-                                    <Button Grid.Column="1" VerticalAlignment="Center" Margin="8,0,0,0"
-                                            Tag="{Binding}" Click="RemoveFeed_Click"
-                                            Background="Transparent" Padding="8"
-                                            ToolTipService.ToolTip="Remove feed">
-                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE74D;"
-                                                  FontSize="16" Foreground="#FF6B6B" />
-                                    </Button>
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
                 </StackPanel>
             </ScrollViewer>
         </Grid>
@@ -236,6 +240,14 @@
                     <ComboBoxItem Content="Every 30 minutes" Tag="30" />
                     <ComboBoxItem Content="Every 60 minutes" Tag="60" />
                 </ComboBox>
+
+                <!-- Live tile -->
+                <TextBlock Text="Live tile" Foreground="White" FontSize="16" FontWeight="SemiBold"
+                           Margin="0,10,0,6" />
+                <TextBlock Text="Show the latest headline on the Start tile" Foreground="Gray"
+                           FontSize="13" Margin="0,0,0,4" />
+                <ToggleSwitch x:Name="LiveTileToggle" OffContent="Off" OnContent="On"
+                              Foreground="White" Toggled="LiveTileToggle_Toggled" Margin="0,0,0,8" />
 
                 <TextBlock x:Name="BuildInfoText" Foreground="#555555" FontSize="11" Margin="0,18,0,0" />
             </StackPanel>

@@ -55,6 +55,7 @@ namespace DayView
 
             LoadAccentSetting();
             InitRefreshIntervalCombo();
+            LoadLiveTileSetting();
             BuildInfoText.Text = "DayView 2.0 — build " + BuildInfo.Date;
 
             RebuildSubscribedList();
@@ -119,7 +120,6 @@ namespace DayView
             int index = FeedSourceCombo.SelectedIndex;
             if (index < 0) index = 0;
 
-            _articles.Clear();
             FeedErrorText.Visibility = Visibility.Collapsed;
             FeedLoadingRing.IsActive = true;
 
@@ -136,8 +136,15 @@ namespace DayView
                     result = await _feed.FetchFeedAsync(source.Url, source.Title);
                 }
 
+                // Swap content in only after the fetch completes so a background
+                // refresh (e.g. right after adding a feed) doesn't blank the list.
+                _articles.Clear();
                 foreach (var a in result)
                     _articles.Add(a);
+
+                // Keep the Start screen live tile showing the newest headline.
+                if (_data.LiveTileEnabled)
+                    Services.TileService.UpdateLatest(result.Count > 0 ? result[0] : null);
 
                 if (_articles.Count == 0)
                 {
@@ -149,6 +156,7 @@ namespace DayView
             }
             catch (Exception ex)
             {
+                _articles.Clear();
                 FeedErrorText.Text = "Could not load this feed.\n" + ex.Message;
                 FeedErrorText.Visibility = Visibility.Visible;
             }
@@ -262,28 +270,40 @@ namespace DayView
             NavFeed.Background = tab == 0 ? AccentBrush : InactiveNavBrush;
             NavFeeds.Background = tab == 1 ? AccentBrush : InactiveNavBrush;
             NavSettings.Background = tab == 2 ? AccentBrush : InactiveNavBrush;
+
+            // Source selector and refresh only belong to the Feed tab.
+            var headerVisibility = tab == 0 ? Visibility.Visible : Visibility.Collapsed;
+            FeedSourceCombo.Visibility = headerVisibility;
+            RefreshButton.Visibility = headerVisibility;
         }
 
         // ==================== Feeds subtabs ====================
 
-        private void FeedsDiscoverTab_Click(object sender, RoutedEventArgs e)
+        private void FeedsMineTab_Click(object sender, RoutedEventArgs e)
         {
             SetFeedsSubtab(0);
         }
 
-        private void FeedsManualTab_Click(object sender, RoutedEventArgs e)
+        private void FeedsDiscoverTab_Click(object sender, RoutedEventArgs e)
         {
             SetFeedsSubtab(1);
         }
 
-        // 0 = Discover (default), 1 = Add by URL.
+        private void FeedsManualTab_Click(object sender, RoutedEventArgs e)
+        {
+            SetFeedsSubtab(2);
+        }
+
+        // 0 = My feeds (default), 1 = Discover, 2 = Add by URL.
         private void SetFeedsSubtab(int sub)
         {
-            DiscoverSubPanel.Visibility = sub == 0 ? Visibility.Visible : Visibility.Collapsed;
-            ManualSubPanel.Visibility = sub == 1 ? Visibility.Visible : Visibility.Collapsed;
+            MyFeedsSubPanel.Visibility = sub == 0 ? Visibility.Visible : Visibility.Collapsed;
+            DiscoverSubPanel.Visibility = sub == 1 ? Visibility.Visible : Visibility.Collapsed;
+            ManualSubPanel.Visibility = sub == 2 ? Visibility.Visible : Visibility.Collapsed;
 
-            FeedsDiscoverTab.Background = sub == 0 ? AccentBrush : InactiveTabBrush;
-            FeedsManualTab.Background = sub == 1 ? AccentBrush : InactiveTabBrush;
+            FeedsMineTab.Background = sub == 0 ? AccentBrush : InactiveTabBrush;
+            FeedsDiscoverTab.Background = sub == 1 ? AccentBrush : InactiveTabBrush;
+            FeedsManualTab.Background = sub == 2 ? AccentBrush : InactiveTabBrush;
         }
 
         private static Windows.UI.Xaml.Media.Brush AccentBrush

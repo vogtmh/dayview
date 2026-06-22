@@ -38,6 +38,32 @@ namespace DayView
             SetActiveTab(_activeTab);
         }
 
+        // ==================== Live tile ====================
+
+        private void LoadLiveTileSetting()
+        {
+            LiveTileToggle.IsOn = _data.LiveTileEnabled;
+        }
+
+        private async void LiveTileToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!_initialized) return;
+            bool enabled = LiveTileToggle.IsOn;
+            _data.LiveTileEnabled = enabled;
+
+            if (enabled)
+            {
+                // Re-register the background task and refresh the tile immediately.
+                await Services.LiveTileTask.RegisterAsync(_data.RefreshIntervalMinutes);
+                Services.TileService.UpdateLatest(_articles.Count > 0 ? _articles[0] : null);
+            }
+            else
+            {
+                Services.LiveTileTask.Unregister();
+                Services.TileService.Clear();
+            }
+        }
+
         // ==================== Auto-refresh ====================
 
         private void InitRefreshIntervalCombo()
@@ -58,14 +84,18 @@ namespace DayView
             ApplyRefreshInterval(minutes);
         }
 
-        private void RefreshIntervalCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void RefreshIntervalCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var item = RefreshIntervalCombo.SelectedItem as ComboBoxItem;
             if (item == null || item.Tag == null) return;
 
             int minutes = int.Parse(item.Tag.ToString());
             if (_initialized)
+            {
                 _data.RefreshIntervalMinutes = minutes;
+                // Re-register the live tile task so the new interval applies now.
+                await Services.LiveTileTask.RegisterAsync(minutes);
+            }
             ApplyRefreshInterval(minutes);
         }
 
