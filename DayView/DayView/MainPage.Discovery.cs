@@ -24,13 +24,14 @@ namespace DayView
             var feed = btn != null ? btn.Tag as FeedSource : null;
             if (feed == null) return;
 
-            int previousIndex = FeedChips.SelectedIndex;
+            string currentName = SelectedSourceName;
             await _data.RemoveFeedAsync(feed.Url);
 
             RebuildSubscribedList();
-            // Keep the current selection valid after the feed list shrinks.
-            int target = previousIndex >= _chipNames.Count - 1 ? 0 : previousIndex;
-            BuildChips(target);
+            // If the removed feed was the selected source, fall back to "All".
+            if (string.Equals(currentName, feed.Title, StringComparison.Ordinal))
+                currentName = "All";
+            BuildSources(currentName);
             await LoadCurrentAsync();
         }
 
@@ -159,15 +160,14 @@ namespace DayView
         private async void OnFeedsChanged()
         {
             RebuildSubscribedList();
-            int current = FeedChips.SelectedIndex;
-            BuildChips(current < 0 ? 0 : current);
+            BuildSources(SelectedSourceName);
             await LoadCurrentAsync();
         }
 
         private void SetSettingsStatus(string message, bool isError)
         {
-            SettingsStatus.Text = message;
-            SettingsStatus.Foreground = new Windows.UI.Xaml.Media.SolidColorBrush(
+            FeedsStatus.Text = message;
+            FeedsStatus.Foreground = new Windows.UI.Xaml.Media.SolidColorBrush(
                 isError ? Windows.UI.ColorHelper.FromArgb(0xFF, 0xFF, 0x6B, 0x6B)
                         : Windows.UI.ColorHelper.FromArgb(0xFF, 0x4C, 0xD9, 0x64));
         }

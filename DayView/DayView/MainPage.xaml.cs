@@ -18,14 +18,16 @@ namespace DayView
         private readonly FeedService _feed = new FeedService();
         private readonly FeedDiscoveryService _discovery = new FeedDiscoveryService();
 
-        // Chip labels: index 0 is the aggregated "All" view, the rest map to _data.Feeds.
-        private readonly ObservableCollection<string> _chipNames = new ObservableCollection<string>();
+        // Source dropdown labels: index 0 is the aggregated "All" view, the rest
+        // map to _sortedFeeds (feeds sorted alphabetically by title).
+        private readonly ObservableCollection<string> _sourceNames = new ObservableCollection<string>();
+        private readonly List<FeedSource> _sortedFeeds = new List<FeedSource>();
         private readonly ObservableCollection<Article> _articles = new ObservableCollection<Article>();
 
         private readonly DispatcherTimer _refreshTimer = new DispatcherTimer();
 
         private bool _initialized;
-        private bool _suppressChipReload;
+        private bool _suppressSourceReload;
         private Article _currentArticle;
 
         // 0 = Feed tab, 1 = Settings tab.
@@ -34,7 +36,7 @@ namespace DayView
         public MainPage()
         {
             this.InitializeComponent();
-            FeedChips.ItemsSource = _chipNames;
+            FeedSourceCombo.ItemsSource = _sourceNames;
             ArticlesList.ItemsSource = _articles;
             _refreshTimer.Tick += RefreshTimer_Tick;
 
@@ -56,41 +58,57 @@ namespace DayView
             BuildInfoText.Text = "DayView 2.0 — build " + BuildInfo.Date;
 
             RebuildSubscribedList();
-            BuildChips(0);
+            BuildSources("All");
+            SetFeedsSubtab(0);
 
             _initialized = true;
 
-            // Selecting the first chip loads the aggregated feed.
+            // Selecting the first source loads the aggregated feed.
             await LoadCurrentAsync();
         }
 
-        // ==================== Chips ====================
+        // ==================== Source dropdown ====================
 
-        // Rebuilds the chip list ("All" + each feed) and selects the given index.
-        // Reloading is suppressed here; callers reload explicitly afterwards.
-        private void BuildChips(int selectIndex)
+        // Rebuilds the dropdown ("All" + feeds sorted alphabetically) and selects the
+        // item matching selectName (falling back to "All"). Reloading is suppressed
+        // here; callers reload explicitly afterwards.
+        private void BuildSources(string selectName)
         {
-            _suppressChipReload = true;
+            _suppressSourceReload = true;
             try
             {
-                _chipNames.Clear();
-                _chipNames.Add("All");
-                foreach (var f in _data.Feeds)
-                    _chipNames.Add(f.Title);
+                _sortedFeeds.Clear();
+                _sortedFeeds.AddRange(_data.Feeds);
+                _sortedFeeds.Sort((a, b) =>
+                    string.Compare(a.Title, b.Title, StringComparison.CurrentCultureIgnoreCase));
 
-                if (selectIndex < 0 || selectIndex >= _chipNames.Count)
-                    selectIndex = 0;
-                FeedChips.SelectedIndex = selectIndex;
+                _sourceNames.Clear();
+                _sourceNames.Add("All");
+                foreach (var f in _sortedFeeds)
+                    _sourceNames.Add(f.Title);
+
+                int selectIndex = string.IsNullOrEmpty(selectName) ? 0 : _sourceNames.IndexOf(selectName);
+                if (selectIndex < 0) selectIndex = 0;
+                FeedSourceCombo.SelectedIndex = selectIndex;
             }
             finally
             {
-                _suppressChipReload = false;
+                _suppressSourceReload = false;
             }
         }
 
-        private async void FeedChips_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        // The currently selected source name, or "All" when nothing is selected.
+        private string SelectedSourceName
         {
-            if (!_initialized || _suppressChipReload) return;
+            get
+            {
+                return FeedSourceCombo.SelectedItem as string ?? "All";
+            }
+        }
+
+        private async void FeedSourceCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_initialized || _suppressSourceReload) return;
             await LoadCurrentAsync();
         }
 
@@ -98,7 +116,7 @@ namespace DayView
 
         private async Task LoadCurrentAsync()
         {
-            int index = FeedChips.SelectedIndex;
+            int index = FeedSourceCombo.SelectedIndex;
             if (index < 0) index = 0;
 
             _articles.Clear();
@@ -114,7 +132,7 @@ namespace DayView
                 }
                 else
                 {
-                    var source = _data.Feeds[index - 1];
+                    var source = _sortedFeeds[index - 1];
                     result = await _feed.FetchFeedAsync(source.Url, source.Title);
                 }
 
@@ -223,19 +241,49 @@ namespace DayView
             SetActiveTab(0);
         }
 
-        private void NavSettings_Click(object sender, RoutedEventArgs e)
+        private void NavFeeds_Click(object sender, RoutedEventArgs e)
         {
             SetActiveTab(1);
         }
 
+        private void NavSettings_Click(object sender, RoutedEventArgs e)
+        {
+            SetActiveTab(2);
+        }
+
+        // 0 = Feed, 1 = Feeds (management), 2 = Settings.
         private void SetActiveTab(int tab)
         {
             _activeTab = tab;
             FeedPanel.Visibility = tab == 0 ? Visibility.Visible : Visibility.Collapsed;
-            SettingsPanel.Visibility = tab == 1 ? Visibility.Visible : Visibility.Collapsed;
+            FeedsPanel.Visibility = tab == 1 ? Visibility.Visible : Visibility.Collapsed;
+            SettingsPanel.Visibility = tab == 2 ? Visibility.Visible : Visibility.Collapsed;
 
             NavFeed.Background = tab == 0 ? AccentBrush : InactiveNavBrush;
-            NavSettings.Background = tab == 1 ? AccentBrush : InactiveNavBrush;
+            NavFeeds.Background = tab == 1 ? AccentBrush : InactiveNavBrush;
+            NavSettings.Background = tab == 2 ? AccentBrush : InactiveNavBrush;
+        }
+
+        // ==================== Feeds subtabs ====================
+
+        private void FeedsDiscoverTab_Click(object sender, RoutedEventArgs e)
+        {
+            SetFeedsSubtab(0);
+        }
+
+        private void FeedsManualTab_Click(object sender, RoutedEventArgs e)
+        {
+            SetFeedsSubtab(1);
+        }
+
+        // 0 = Discover (default), 1 = Add by URL.
+        private void SetFeedsSubtab(int sub)
+        {
+            DiscoverSubPanel.Visibility = sub == 0 ? Visibility.Visible : Visibility.Collapsed;
+            ManualSubPanel.Visibility = sub == 1 ? Visibility.Visible : Visibility.Collapsed;
+
+            FeedsDiscoverTab.Background = sub == 0 ? AccentBrush : InactiveTabBrush;
+            FeedsManualTab.Background = sub == 1 ? AccentBrush : InactiveTabBrush;
         }
 
         private static Windows.UI.Xaml.Media.Brush AccentBrush
@@ -245,6 +293,9 @@ namespace DayView
 
         private static readonly Windows.UI.Xaml.Media.Brush InactiveNavBrush =
             new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.ColorHelper.FromArgb(0xFF, 0x11, 0x11, 0x11));
+
+        private static readonly Windows.UI.Xaml.Media.Brush InactiveTabBrush =
+            new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.ColorHelper.FromArgb(0xFF, 0x33, 0x33, 0x33));
 
         // ==================== Back button ====================
 

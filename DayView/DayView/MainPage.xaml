@@ -14,11 +14,20 @@
 
         <!-- ==================== HEADER ==================== -->
         <Grid Grid.Row="0" Background="#111111" Padding="14,8" Height="48">
-            <TextBlock Text="DayView" Foreground="White" FontSize="20" FontWeight="SemiBold"
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="DayView" Foreground="White" FontSize="20" FontWeight="SemiBold"
                        VerticalAlignment="Center" HorizontalAlignment="Left" />
-            <Button x:Name="RefreshButton" Click="RefreshButton_Click"
+            <ComboBox x:Name="FeedSourceCombo" Grid.Column="1"
+                      VerticalAlignment="Center" MinWidth="120" MaxWidth="200"
+                      SelectionChanged="FeedSourceCombo_SelectionChanged"
+                      ToolTipService.ToolTip="Select source" />
+            <Button x:Name="RefreshButton" Grid.Column="2" Click="RefreshButton_Click"
                     HorizontalAlignment="Right" VerticalAlignment="Center"
-                    Background="Transparent" Padding="8,4"
+                    Background="Transparent" Padding="8,4" Margin="6,0,0,0"
                     ToolTipService.ToolTip="Refresh">
                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE72C;" FontSize="18" Foreground="White" />
             </Button>
@@ -26,42 +35,7 @@
 
         <!-- ==================== FEED PANEL ==================== -->
         <Grid x:Name="FeedPanel" Grid.Row="1" Visibility="Visible">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-
-            <!-- Feed chip selector: "All" + one chip per subscribed feed -->
-            <ListView x:Name="FeedChips" Grid.Row="0" Background="#1a1a1a"
-                      SelectionMode="Single" IsItemClickEnabled="False"
-                      SelectionChanged="FeedChips_SelectionChanged"
-                      ScrollViewer.HorizontalScrollMode="Auto"
-                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                      ScrollViewer.VerticalScrollMode="Disabled"
-                      ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                      Padding="6,4">
-                <ListView.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal" />
-                    </ItemsPanelTemplate>
-                </ListView.ItemsPanel>
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="Margin" Value="2,0" />
-                        <Setter Property="Padding" Value="0" />
-                        <Setter Property="MinWidth" Value="0" />
-                    </Style>
-                </ListView.ItemContainerStyle>
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <Border Background="#2a2a2a" CornerRadius="14" Padding="14,6">
-                            <TextBlock Text="{Binding}" Foreground="White" FontSize="14" />
-                        </Border>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-
-            <Grid Grid.Row="1">
+            <Grid>
                 <ProgressRing x:Name="FeedLoadingRing" IsActive="False"
                               Width="50" Height="50" Foreground="White"
                               HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -113,111 +87,141 @@
             </Grid>
         </Grid>
 
+        <!-- ==================== FEEDS PANEL (management) ==================== -->
+        <Grid x:Name="FeedsPanel" Grid.Row="1" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Subtab switcher: Discover (default) | Add by URL -->
+            <Grid Grid.Row="0" Background="#1a1a1a" Padding="12,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Button x:Name="FeedsDiscoverTab" Grid.Column="0" Content="Discover"
+                        Click="FeedsDiscoverTab_Click" HorizontalAlignment="Stretch"
+                        Background="{StaticResource AppAccentBrush}" Foreground="White" />
+                <Button x:Name="FeedsManualTab" Grid.Column="1" Content="Add by URL"
+                        Click="FeedsManualTab_Click" HorizontalAlignment="Stretch"
+                        Background="#333333" Foreground="White" Margin="8,0,0,0" />
+            </Grid>
+
+            <ScrollViewer Grid.Row="1">
+                <StackPanel Padding="16">
+
+                    <!-- Discover subtab: keyword search -->
+                    <StackPanel x:Name="DiscoverSubPanel">
+                        <TextBlock Text="Search by keyword (e.g. heise, sport, nasa)" Foreground="Gray"
+                                   FontSize="13" Margin="0,0,0,4" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="SearchBox" PlaceholderText="Search for feeds..."
+                                     KeyDown="SearchBox_KeyDown" FontSize="15" />
+                            <Button x:Name="SearchButton" Grid.Column="1" Content="Search"
+                                    Click="SearchButton_Click" Margin="8,0,0,0"
+                                    Background="{StaticResource AppAccentBrush}" Foreground="White" />
+                        </Grid>
+
+                        <ProgressRing x:Name="SearchLoadingRing" IsActive="False" Width="32" Height="32"
+                                      Foreground="White" HorizontalAlignment="Center" Margin="0,8,0,0" />
+                        <TextBlock x:Name="SearchStatusText" Foreground="Gray" FontSize="13"
+                                   TextWrapping="Wrap" Margin="0,6,0,0" Visibility="Collapsed" />
+
+                        <ItemsControl x:Name="SearchResultsList" Margin="0,8,0,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Padding="0,8" Background="Transparent">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="36" Height="36" CornerRadius="6"
+                                                VerticalAlignment="Top"
+                                                Visibility="{Binding IconVisibility}">
+                                            <Border.Background>
+                                                <ImageBrush ImageSource="{Binding IconUrl}" Stretch="UniformToFill" />
+                                            </Border.Background>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Title}" Foreground="White" FontSize="14"
+                                                       TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Description}" Foreground="#999999" FontSize="11"
+                                                       TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding SubscribersText}" Foreground="Gray" FontSize="10" />
+                                        </StackPanel>
+                                        <Button Grid.Column="2" Content="Add" VerticalAlignment="Center"
+                                                Margin="8,0,0,0" Tag="{Binding}" Click="AddSearchResult_Click"
+                                                Background="#333333" Foreground="White" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- Manual subtab: add a feed by URL -->
+                    <StackPanel x:Name="ManualSubPanel" Visibility="Collapsed">
+                        <TextBlock Text="Paste a feed or website URL" Foreground="Gray" FontSize="13" Margin="0,0,0,4" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="AddUrlBox" PlaceholderText="https://example.com/feed.xml"
+                                     KeyDown="AddUrlBox_KeyDown" FontSize="15" />
+                            <Button x:Name="AddUrlButton" Grid.Column="1" Content="Add"
+                                    Click="AddUrlButton_Click" Margin="8,0,0,0"
+                                    Background="{StaticResource AppAccentBrush}" Foreground="White" />
+                        </Grid>
+                    </StackPanel>
+
+                    <TextBlock x:Name="FeedsStatus" Foreground="#4CD964" FontSize="13"
+                               TextWrapping="Wrap" Margin="0,10,0,0" />
+
+                    <!-- Shared: subscribed feeds -->
+                    <TextBlock Text="Your feeds" Foreground="White" FontSize="16" FontWeight="SemiBold"
+                               Margin="0,18,0,6" />
+                    <ItemsControl x:Name="SubscribedList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Padding="0,8" Background="Transparent">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Title}" Foreground="White" FontSize="14"
+                                                   TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding Url}" Foreground="Gray" FontSize="11"
+                                                   TextWrapping="Wrap" MaxLines="1" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                    <Button Grid.Column="1" VerticalAlignment="Center" Margin="8,0,0,0"
+                                            Tag="{Binding}" Click="RemoveFeed_Click"
+                                            Background="Transparent" Padding="8"
+                                            ToolTipService.ToolTip="Remove feed">
+                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE74D;"
+                                                  FontSize="16" Foreground="#FF6B6B" />
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+
         <!-- ==================== SETTINGS PANEL ==================== -->
         <ScrollViewer x:Name="SettingsPanel" Grid.Row="1" Visibility="Collapsed">
             <StackPanel Padding="16">
 
-                <!-- Add a feed by URL -->
-                <TextBlock Text="Add a feed" Foreground="White" FontSize="16" FontWeight="SemiBold"
-                           Margin="0,0,0,6" />
-                <TextBlock Text="Paste a feed or website URL" Foreground="Gray" FontSize="13" Margin="0,0,0,4" />
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <TextBox x:Name="AddUrlBox" PlaceholderText="https://example.com/feed.xml"
-                             KeyDown="AddUrlBox_KeyDown" FontSize="15" />
-                    <Button x:Name="AddUrlButton" Grid.Column="1" Content="Add"
-                            Click="AddUrlButton_Click" Margin="8,0,0,0"
-                            Background="{StaticResource AppAccentBrush}" Foreground="White" />
-                </Grid>
-
-                <!-- Discover feeds by keyword -->
-                <TextBlock Text="Discover feeds" Foreground="White" FontSize="16" FontWeight="SemiBold"
-                           Margin="0,18,0,6" />
-                <TextBlock Text="Search by keyword (e.g. heise, sport, nasa)" Foreground="Gray"
-                           FontSize="13" Margin="0,0,0,4" />
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <TextBox x:Name="SearchBox" PlaceholderText="Search for feeds..."
-                             KeyDown="SearchBox_KeyDown" FontSize="15" />
-                    <Button x:Name="SearchButton" Grid.Column="1" Content="Search"
-                            Click="SearchButton_Click" Margin="8,0,0,0"
-                            Background="{StaticResource AppAccentBrush}" Foreground="White" />
-                </Grid>
-
-                <ProgressRing x:Name="SearchLoadingRing" IsActive="False" Width="32" Height="32"
-                              Foreground="White" HorizontalAlignment="Center" Margin="0,8,0,0" />
-                <TextBlock x:Name="SearchStatusText" Foreground="Gray" FontSize="13"
-                           TextWrapping="Wrap" Margin="0,6,0,0" Visibility="Collapsed" />
-
-                <ItemsControl x:Name="SearchResultsList" Margin="0,8,0,0">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Grid Padding="0,8" Background="Transparent">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <Border Width="36" Height="36" CornerRadius="6"
-                                        VerticalAlignment="Top"
-                                        Visibility="{Binding IconVisibility}">
-                                    <Border.Background>
-                                        <ImageBrush ImageSource="{Binding IconUrl}" Stretch="UniformToFill" />
-                                    </Border.Background>
-                                </Border>
-                                <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Title}" Foreground="White" FontSize="14"
-                                               TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" />
-                                    <TextBlock Text="{Binding Description}" Foreground="#999999" FontSize="11"
-                                               TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" />
-                                    <TextBlock Text="{Binding SubscribersText}" Foreground="Gray" FontSize="10" />
-                                </StackPanel>
-                                <Button Grid.Column="2" Content="Add" VerticalAlignment="Center"
-                                        Margin="8,0,0,0" Tag="{Binding}" Click="AddSearchResult_Click"
-                                        Background="#333333" Foreground="White" />
-                            </Grid>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-
-                <!-- Subscribed feeds -->
-                <TextBlock Text="Your feeds" Foreground="White" FontSize="16" FontWeight="SemiBold"
-                           Margin="0,18,0,6" />
-                <ItemsControl x:Name="SubscribedList">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Grid Padding="0,8" Background="Transparent">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Title}" Foreground="White" FontSize="14"
-                                               TextWrapping="Wrap" />
-                                    <TextBlock Text="{Binding Url}" Foreground="Gray" FontSize="11"
-                                               TextWrapping="Wrap" MaxLines="1" TextTrimming="CharacterEllipsis" />
-                                </StackPanel>
-                                <Button Grid.Column="1" VerticalAlignment="Center" Margin="8,0,0,0"
-                                        Tag="{Binding}" Click="RemoveFeed_Click"
-                                        Background="Transparent" Padding="8"
-                                        ToolTipService.ToolTip="Remove feed">
-                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE74D;"
-                                              FontSize="16" Foreground="#FF6B6B" />
-                                </Button>
-                            </Grid>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-
                 <!-- Appearance -->
                 <TextBlock Text="Appearance" Foreground="White" FontSize="16" FontWeight="SemiBold"
-                           Margin="0,18,0,6" />
+                           Margin="0,0,0,6" />
                 <TextBlock Text="Use system accent color" Foreground="Gray" FontSize="13" Margin="0,0,0,4" />
                 <ToggleSwitch x:Name="AccentColorToggle" OffContent="Brand blue" OnContent="System accent"
                               Foreground="White" Toggled="AccentColorToggle_Toggled" Margin="0,0,0,8" />
@@ -233,9 +237,7 @@
                     <ComboBoxItem Content="Every 60 minutes" Tag="60" />
                 </ComboBox>
 
-                <TextBlock x:Name="SettingsStatus" Foreground="#4CD964" FontSize="13"
-                           TextWrapping="Wrap" Margin="0,14,0,8" />
-                <TextBlock x:Name="BuildInfoText" Foreground="#555555" FontSize="11" Margin="0,8,0,0" />
+                <TextBlock x:Name="BuildInfoText" Foreground="#555555" FontSize="11" Margin="0,18,0,0" />
             </StackPanel>
         </ScrollViewer>
 
@@ -244,13 +246,21 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Button x:Name="NavFeed" Grid.Column="0" Click="NavFeed_Click"
-                    Background="{StaticResource AppAccentBrush}" HorizontalAlignment="Stretch" Padding="0,12">
-                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE789;" FontSize="20" Foreground="White" />
+                    Background="{StaticResource AppAccentBrush}" HorizontalAlignment="Stretch" Padding="0,12"
+                    ToolTipService.ToolTip="Feed">
+                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8FD;" FontSize="20" Foreground="White" />
             </Button>
-            <Button x:Name="NavSettings" Grid.Column="1" Click="NavSettings_Click"
-                    Background="#111111" HorizontalAlignment="Stretch" Padding="0,12">
+            <Button x:Name="NavFeeds" Grid.Column="1" Click="NavFeeds_Click"
+                    Background="#111111" HorizontalAlignment="Stretch" Padding="0,12"
+                    ToolTipService.ToolTip="Manage feeds">
+                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8F1;" FontSize="20" Foreground="White" />
+            </Button>
+            <Button x:Name="NavSettings" Grid.Column="2" Click="NavSettings_Click"
+                    Background="#111111" HorizontalAlignment="Stretch" Padding="0,12"
+                    ToolTipService.ToolTip="Settings">
                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE713;" FontSize="20" Foreground="White" />
             </Button>
         </Grid>
