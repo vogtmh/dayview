@@ -1,0 +1,12 @@
+<Application
+    x:Class="DayView.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:DayView"
+    RequestedTheme="Dark">
+    <Application.Resources>
+        <!-- App accent brush. Its Color is set at runtime from either the system
+             accent color or the fixed brand blue, based on a user setting. -->
+        <SolidColorBrush x:Key="AppAccentBrush" Color="#0078D7" />
+    </Application.Resources>
+</Application>
