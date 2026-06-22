@@ -114,6 +114,12 @@ namespace DayView
             try
             {
                 var results = await _discovery.SearchAsync(query);
+
+                // Pre-mark feeds the user already follows so they show the
+                // green checkmark state from the start.
+                foreach (var r in results)
+                    r.IsSubscribed = _data.IsSubscribed(r.Url);
+
                 SearchResultsList.ItemsSource = results;
 
                 if (results.Count == 0)
@@ -149,6 +155,7 @@ namespace DayView
             bool added = await _data.AddFeedAsync(result.Title, result.Url, result.IconUrl);
             if (added)
             {
+                result.IsSubscribed = true;
                 OnFeedsChanged();
                 SetSettingsStatus("Added \"" + result.Title + "\".", false);
             }

@@ -88,7 +88,13 @@ namespace DayView.Services
 
         public bool UseSystemAccent
         {
-            get { return _localSettings.Values.ContainsKey(UseSystemAccentKey) && (bool)_localSettings.Values[UseSystemAccentKey]; }
+            // Use the system accent color by default; users can switch to brand blue.
+            get
+            {
+                if (_localSettings.Values.ContainsKey(UseSystemAccentKey))
+                    return (bool)_localSettings.Values[UseSystemAccentKey];
+                return true;
+            }
             set { _localSettings.Values[UseSystemAccentKey] = value; }
         }
 

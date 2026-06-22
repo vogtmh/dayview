@@ -155,7 +155,8 @@
                             </Grid.ColumnDefinitions>
                             <TextBox x:Name="SearchBox" PlaceholderText="Search for feeds..."
                                      KeyDown="SearchBox_KeyDown" FontSize="15" />
-                            <Button x:Name="SearchButton" Grid.Column="1" Content="Search"
+                            <Button x:Name="SearchButton" Grid.Column="1" Content="&#xE721;"
+                                    FontFamily="Segoe MDL2 Assets"
                                     Click="SearchButton_Click" Margin="8,0,0,0"
                                     Background="{StaticResource AppAccentBrush}" Foreground="White" />
                         </Grid>
@@ -188,9 +189,12 @@
                                                        TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" />
                                             <TextBlock Text="{Binding SubscribersText}" Foreground="Gray" FontSize="10" />
                                         </StackPanel>
-                                        <Button Grid.Column="2" Content="Add" VerticalAlignment="Center"
+                                        <Button Grid.Column="2" Content="{Binding AddButtonContent}"
+                                                FontFamily="Segoe MDL2 Assets"
+                                                VerticalAlignment="Center" MinWidth="56"
                                                 Margin="8,0,0,0" Tag="{Binding}" Click="AddSearchResult_Click"
-                                                Background="#333333" Foreground="White" />
+                                                IsEnabled="{Binding AddButtonEnabled}"
+                                                Background="{Binding AddButtonBackground}" Foreground="White" />
                                     </Grid>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>

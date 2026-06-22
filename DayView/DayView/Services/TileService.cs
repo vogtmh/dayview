@@ -44,22 +44,28 @@ namespace DayView.Services
             string title = Escape(latest.Title);
             string source = Escape(string.IsNullOrEmpty(latest.FeedTitle) ? "" : latest.FeedTitle);
 
-            // Medium tile: source label + wrapped headline.
-            // Wide / large tiles: same content with more room to wrap.
+            // Medium tile: headline only (no app name or source — not enough room).
+            // Wide / large tiles: source label + wrapped headline.
             string sourceLine = string.IsNullOrEmpty(source)
                 ? ""
                 : "<text hint-style=\"captionSubtle\">" + source + "</text>";
+
+            // Use the article image as a darkened background on the wide tile so
+            // the headline stays readable on top of it.
+            string wideBackground = string.IsNullOrEmpty(latest.ImageUrl)
+                ? ""
+                : "<image placement=\"background\" hint-overlay=\"60\" src=\"" + Escape(latest.ImageUrl) + "\" />";
 
             string payload =
                 "<tile>" +
                   "<visual branding=\"name\">" +
 
-                    "<binding template=\"TileMedium\">" +
-                      sourceLine +
-                      "<text hint-style=\"body\" hint-wrap=\"true\" hint-maxLines=\"4\">" + title + "</text>" +
+                    "<binding template=\"TileMedium\" branding=\"none\">" +
+                      "<text hint-style=\"body\" hint-wrap=\"true\" hint-maxLines=\"5\">" + title + "</text>" +
                     "</binding>" +
 
                     "<binding template=\"TileWide\">" +
+                      wideBackground +
                       sourceLine +
                       "<text hint-style=\"base\" hint-wrap=\"true\" hint-maxLines=\"3\">" + title + "</text>" +
                     "</binding>" +
