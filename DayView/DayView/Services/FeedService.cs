@@ -180,14 +180,20 @@ namespace DayView.Services
                 if (ext.NodeNamespace != MediaNs) continue;
                 if (ext.NodeName != "content" && ext.NodeName != "thumbnail") continue;
 
-                string url = GetAttribute(ext.AttributeExtensions, "url");
+                // Read the attributes into a name->value map. The attribute element
+                // type (ISyndicationAttribute) can't be named here, so iterate with var.
+                string url = null, type = null, medium = null;
+                foreach (var attr in ext.AttributeExtensions)
+                {
+                    if (attr.Name == "url") url = attr.Value;
+                    else if (attr.Name == "type") type = attr.Value;
+                    else if (attr.Name == "medium") medium = attr.Value;
+                }
                 if (string.IsNullOrEmpty(url)) continue;
 
                 // For media:content, ignore non-image media (e.g. video).
                 if (ext.NodeName == "content")
                 {
-                    string type = GetAttribute(ext.AttributeExtensions, "type");
-                    string medium = GetAttribute(ext.AttributeExtensions, "medium");
                     if (!string.IsNullOrEmpty(type) && !type.StartsWith("image", StringComparison.OrdinalIgnoreCase))
                         continue;
                     if (string.IsNullOrEmpty(type) && !string.IsNullOrEmpty(medium) &&
@@ -211,14 +217,6 @@ namespace DayView.Services
                         return l.Uri.ToString();
                 }
             }
-            return null;
-        }
-
-        private static string GetAttribute(IList<ISyndicationAttribute> attributes, string name)
-        {
-            if (attributes == null) return null;
-            foreach (var a in attributes)
-                if (a.Name == name) return a.Value;
             return null;
         }
 
